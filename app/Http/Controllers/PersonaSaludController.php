@@ -29,8 +29,15 @@ class PersonaSaludController extends Controller
                 'telefono' => 'nullable|string|max:20',
                 'email' => 'nullable|email|max:255|unique:personal_salud',
                 'especialidad_id' => 'nullable|exists:especialidades,id',
-                'horario_semanal' => 'nullable|json',
+                'horario_semanal' => 'nullable', // quitamos validación json para procesar manualmente
             ]);
+
+            if (isset($validated['horario_semanal']) && is_array($validated['horario_semanal'])) {
+                $validated['horario_semanal'] = json_encode($validated['horario_semanal']);
+            }
+            if (isset($validated['horario_semanal']) && is_object($validated['horario_semanal'])) {
+                $validated['horario_semanal'] = json_encode($validated['horario_semanal']);
+            }
 
             $personalsalud = PersonalSalud::create($validated);
             return response()->json($personalsalud, 201);
@@ -63,14 +70,21 @@ class PersonaSaludController extends Controller
     {
         try {
             $validated = $request->validate([
-                'nombre' => 'required|string|max:255',
-                'apellido' => 'required|string|max:255',
+                'nombres' => 'required|string|max:255',
+                'apellidos' => 'required|string|max:255',
                 'dni' => 'required|string|max:20|unique:personal_salud,id',
                 'telefono' => 'nullable|string|max:20',
                 'email' => 'nullable|email|max:255|unique:personal_salud,id',
                 'especialidad_id' => 'nullable|exists:especialidades,id',
-                'horario_semanal' => 'nullable|json',
+                'horario_semanal' => 'nullable', // quitamos validación json para procesar manualmente
             ]);
+
+            if (isset($validated['horario_semanal']) && is_array($validated['horario_semanal'])) {
+                $validated['horario_semanal'] = json_encode($validated['horario_semanal']);
+            }
+            if (isset($validated['horario_semanal']) && is_object($validated['horario_semanal'])) {
+                $validated['horario_semanal'] = json_encode($validated['horario_semanal']);
+            }
 
             $personalsalud = PersonalSalud::find($id);
             $personalsalud->update($validated);
