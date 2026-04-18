@@ -16,6 +16,6 @@ class Especialidad extends Model
 
     public function citas()
     {
-        // return $this->hasMany(Cita::class, 'especialidad_id');
+        return $this->hasMany(Cita::class, 'especialidad_id');
     }
 }

@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('citas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('paciente_id')->constrained('pacientes')->onDelete('cascade');
+            $table->foreignId('personal_salud_id')->constrained('personal_salud')->onDelete('cascade');
+            $table->foreignId('especialidad_id')->constrained('especialidades');
+            $table->date('fecha');
+            $table->time('hora');
+            $table->unsignedBigInteger('operador_id');
+            $table->foreign('operador_id')->references('id')->on('operadores');
+            $table->text('observaciones')->nullable();
+            $table->enum('estado', ['pendiente', 'completada', 'cancelada'])->default('pendiente');
             $table->timestamps();
         });
     }

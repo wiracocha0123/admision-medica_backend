@@ -13,6 +13,22 @@ return new class extends Migration
     {
         Schema::create('personal_salud', function (Blueprint $table) {
             $table->id();
+            // Datos Personales
+            $table->string('nombres');
+            $table->string('apellidos');
+            $table->string('dni', 8)->unique();
+            $table->string('telefono', 9)->nullable();
+            
+            // Autenticación
+            $table->string('email')->unique();
+            
+            // Profesional
+            $table->unsignedBigInteger('especialidad_id');
+            $table->foreign('especialidad_id')->references('id')->on('especialidades')->onDelete('cascade');
+            
+            // Horario Semanal (Guardado como JSON)
+            // Ejemplo: {"lunes": "08:00-14:00", "martes": "10:00-18:00"...}
+            $table->json('horario_semanal')->nullable();
             $table->timestamps();
         });
     }
