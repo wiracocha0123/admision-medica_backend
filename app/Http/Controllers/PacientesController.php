@@ -28,7 +28,7 @@ class PacientesController extends Controller
             'HistoriaClinica' => 'nullable|string',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255|unique:pacientes',
-            'sis' => 'nullable|string|max:50',
+            'sis' => 'nullable|boolean|max:50',
         ]); 
 
         $paciente = Paciente::create($request->all());

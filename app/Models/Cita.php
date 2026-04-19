@@ -33,4 +33,10 @@ class Cita extends Model
     {
         return $this->belongsTo(Especialidad::class, 'especialidad_id');
     }
+
+    public function operador()
+    {
+        return $this->belongsTo(User::class, 'operador_id');
+    }
+    
 }
