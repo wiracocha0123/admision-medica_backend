@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('apellido');
+            //si es gestante o no
             $table->string('dni', 8)->unique();
             $table->string('HistoriaClinica')->unique();
             $table->string('telefono', 9)->nullable();
             $table->string('email')->nullable()->unique();
-            $table->boolean('sis')->default(false);
+            $table->boolean('sis')->default(false);//direccion
             $table->timestamps();
         });
     }

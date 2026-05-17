@@ -18,6 +18,10 @@ class PersonalSalud extends Model
         'horario_semanal',
     ];
 
+    protected $casts = [
+        'horario_semanal' => 'array',
+    ];
+
     public function citas()
     {
         return $this->hasMany(Cita::class, 'personal_salud_id');                                 
@@ -26,6 +30,11 @@ class PersonalSalud extends Model
     public function especialidad()
     {
         return $this->belongsTo(Especialidad::class, 'especialidad_id');
+    }
+
+    public function pacientes()
+    {
+        return $this->hasMany(Paciente::class, 'personal_salud_id');
     }
 
     public function horarioSemanal()

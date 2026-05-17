@@ -4,35 +4,42 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Especialidad;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\Traits\ApiResponse;
+use App\Http\Requests\StoreEspecialidadRequest;
+use App\Http\Requests\UpdateEspecialidadRequest;
 use Symfony\Component\HttpKernel\HttpCache\Esi;
 
 class EspecialidadesController extends Controller
 {
+    use ApiResponse;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $Especialidades = Especialidad::all();
-        return response()->json($Especialidades);
+        Cache::forget('especialidades:list'); // Forzamos limpieza para corregir serialización corrupta
+        $Especialidades = Cache::remember('especialidades:list', 3600, function () {
+            return Especialidad::select('id', 'UPS', 'especialidad')
+                ->orderBy('especialidad')
+                ->get()
+                ->values(); // Asegura llaves numéricas limpias
+        });
+
+        return response()->json([
+            'data' => $Especialidades,
+            'message' => 'Éxito'
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreEspecialidadRequest $request)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-        ]);
-
-        $especialidad = Especialidad::create([
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-        ]);
-
-        return response()->json($especialidad, 201);
+        $especialidad = Especialidad::create($request->validated());
+        Cache::forget('especialidades:list');
+        return $this->success($especialidad, 'Creado', 201);
     }
 
     /**
@@ -41,26 +48,18 @@ class EspecialidadesController extends Controller
     public function show(string $id)
     {
         $especialidad = Especialidad::find($id);
-        return response()->json($especialidad);
+        return $this->success($especialidad);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateEspecialidadRequest $request, string $id)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-        ]);
-
         $especialidad = Especialidad::find($id);
-        $especialidad->update([
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-        ]);
-
-        return response()->json($especialidad);
+        $especialidad->update($request->validated());
+        Cache::forget('especialidades:list');
+        return $this->success($especialidad, 'Actualizado');
     }
 
     /**
@@ -70,7 +69,7 @@ class EspecialidadesController extends Controller
     {
         $especialidad = Especialidad::find($id);
         $especialidad->delete();
-
+        Cache::forget('especialidades:list');
         return response()->json(null, 204);
     }
 }

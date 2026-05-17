@@ -14,6 +14,17 @@ class Operador extends Model
         'email',
         'usuario',
         'contraseña',
+        'DNI',
         'horario_semanal',
+        
     ];
+
+    protected $casts = [
+        'horario_semanal' => 'array',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

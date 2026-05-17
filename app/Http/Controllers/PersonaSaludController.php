@@ -2,113 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Traits\ApiResponse;
+use App\Http\Requests\StorePersonalSaludRequest;
+use App\Http\Requests\UpdatePersonalSaludRequest;
 use App\Models\PersonalSalud;
+use Illuminate\Http\Request;
 
 class PersonaSaludController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $personalsalud = PersonalSalud::all();
-        return response()->json($personalsalud);
+        $personalsalud = PersonalSalud::with('especialidad')->paginate(15);
+        return $this->success($personalsalud);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePersonalSaludRequest $request)
     {
-        try {
-            $validated = $request->validate([
-                'nombres' => 'required|string|max:255',
-                'apellidos' => 'required|string|max:255',
-                'dni' => 'required|string|max:20|unique:personal_salud',
-                'telefono' => 'nullable|string|max:20',
-                'email' => 'nullable|email|max:255|unique:personal_salud',
-                'especialidad_id' => 'nullable|exists:especialidades,id',
-                'horario_semanal' => 'nullable', // quitamos validación json para procesar manualmente
-            ]);
-
-            if (isset($validated['horario_semanal']) && is_array($validated['horario_semanal'])) {
-                $validated['horario_semanal'] = json_encode($validated['horario_semanal']);
-            }
-            if (isset($validated['horario_semanal']) && is_object($validated['horario_semanal'])) {
-                $validated['horario_semanal'] = json_encode($validated['horario_semanal']);
-            }
-
-            $personalsalud = PersonalSalud::create($validated);
-            return response()->json($personalsalud, 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Error de validación',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error interno',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        $personalsalud = PersonalSalud::create($request->validated());
+        return $this->success($personalsalud, 'Personal de salud creado', 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        $personalsalud = PersonalSalud::find($id);
-        return response()->json($personalsalud);
+        $personalsalud = PersonalSalud::with('especialidad')->findOrFail($id);
+        return $this->success($personalsalud);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdatePersonalSaludRequest $request, $id)
     {
-        try {
-            $validated = $request->validate([
-                'nombres' => 'required|string|max:255',
-                'apellidos' => 'required|string|max:255',
-                'dni' => 'required|string|max:20|unique:personal_salud,id',
-                'telefono' => 'nullable|string|max:20',
-                'email' => 'nullable|email|max:255|unique:personal_salud,id',
-                'especialidad_id' => 'nullable|exists:especialidades,id',
-                'horario_semanal' => 'nullable', // quitamos validación json para procesar manualmente
-            ]);
-
-            if (isset($validated['horario_semanal']) && is_array($validated['horario_semanal'])) {
-                $validated['horario_semanal'] = json_encode($validated['horario_semanal']);
-            }
-            if (isset($validated['horario_semanal']) && is_object($validated['horario_semanal'])) {
-                $validated['horario_semanal'] = json_encode($validated['horario_semanal']);
-            }
-
-            $personalsalud = PersonalSalud::find($id);
-            $personalsalud->update($validated);
-            return response()->json($personalsalud);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Error de validación',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error interno',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        $personalsalud = PersonalSalud::findOrFail($id);
+        $personalsalud->update($request->validated());
+        return $this->success($personalsalud, 'Personal de salud actualizado');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        $personalsalud = PersonalSalud::find($id);
+        $personalsalud = PersonalSalud::findOrFail($id);
         $personalsalud->delete();
-        return response()->json(null, 204);
+        return $this->success(null, 'Personal de salud eliminado');
     }
 }

@@ -11,11 +11,16 @@ class Paciente extends Model
     protected $fillable = [
         'nombre',
         'apellido',
+        'gestante',
         'dni',
         'HistoriaClinica',
         'telefono',
         'email',
-        'sis',
+        'direccion',
+    ];
+
+    protected $casts = [
+        'gestante' => 'boolean',
     ];
 
     public function citas()

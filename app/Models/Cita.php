@@ -17,6 +17,12 @@ class Cita extends Model
         'operador_id',
         'observaciones',
         'estado',
+        'nro_ticket',
+        'total_tickets_dia',
+    ];
+
+    protected $casts = [
+        'fecha' => 'date',
     ];
 
     public function paciente()
@@ -32,5 +38,10 @@ class Cita extends Model
     public function especialidad()
     {
         return $this->belongsTo(Especialidad::class, 'especialidad_id');
+    }
+
+    public function operador()
+    {
+        return $this->belongsTo(Operador::class, 'operador_id');
     }
 }

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreign('operador_id')->references('id')->on('operadores');
             $table->text('observaciones')->nullable();
             $table->enum('estado', ['pendiente', 'completada', 'cancelada'])->default('pendiente');
+            //NRO DE TICKET
             $table->timestamps();
         });
     }

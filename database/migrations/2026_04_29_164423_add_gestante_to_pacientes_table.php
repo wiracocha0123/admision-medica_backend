@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('especialidades', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre');//UPS
-            $table->text('descripcion')->nullable();//ESPECIALIDAD
-            $table->timestamps();
+        Schema::table('pacientes', function (Blueprint $table) {
+            $table->boolean('gestante')->default(false)->after('fecha_nacimiento');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('especialidades');
+        Schema::table('pacientes', function (Blueprint $table) {
+            $table->dropColumn('gestante');
+        });
     }
 };

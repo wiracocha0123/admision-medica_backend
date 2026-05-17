@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('nombres');
             $table->string('apellidos');
             $table->string('dni', 8)->unique();
-            $table->string('telefono', 9)->nullable();
+            $table->string('telefono', 9)->nullable();//NO
             
             // Autenticación
             $table->string('email')->unique();

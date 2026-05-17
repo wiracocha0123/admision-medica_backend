@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('usuario')->unique();
             $table->string('contraseña');
             $table->json('horario_semanal')->nullable();
+            //DNI
             $table->timestamps();
         });
     }
