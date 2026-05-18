@@ -50,7 +50,7 @@ Route::group(['middleware' => ['role:operador|supervisor']], function () {
     Route::apiResource('pacientes', App\Http\Controllers\PacientesController::class);
     
     Route::apiResource('personal_salud', App\Http\Controllers\PersonaSaludController::class);
-    Route::apiResource('citas', App\Http\Controllers\CitasController::class);
+    Route::get('citas/next-ticket', [App\Http\Controllers\CitasController::class, 'getNextTicket']); Route::apiResource('citas', App\Http\Controllers\CitasController::class);
 });
 
     Route::get('operadores/me', function(){ return response()->json(auth('api')->user()->operador ?? null); });

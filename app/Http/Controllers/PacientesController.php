@@ -48,23 +48,8 @@ class PacientesController extends Controller
      */
     public function store(StorePacienteRequest $request)
     {
-<<<<<<< HEAD
         $paciente = Paciente::create($request->validated());
         return $this->success($paciente, 'Creado', 201);
-=======
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
-            'dni' => 'required|string|max:20|unique:pacientes',
-            'HistoriaClinica' => 'nullable|string',
-            'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255|unique:pacientes',
-            'sis' => 'nullable|boolean|max:50',
-        ]); 
-
-        $paciente = Paciente::create($request->all());
-        return response()->json($paciente, 201);
->>>>>>> 63c6b9e731499fe0c52cc52c76d37b2a0c9b73c1
     }
 
     /**

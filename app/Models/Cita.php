@@ -42,12 +42,6 @@ class Cita extends Model
 
     public function operador()
     {
-<<<<<<< HEAD
         return $this->belongsTo(Operador::class, 'operador_id');
     }
-=======
-        return $this->belongsTo(User::class, 'operador_id');
-    }
-    
->>>>>>> 63c6b9e731499fe0c52cc52c76d37b2a0c9b73c1
 }
