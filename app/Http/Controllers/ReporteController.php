@@ -29,11 +29,9 @@ class ReporteController extends Controller
                         ->whereColumn('personal_salud_id', 'personal_salud.id');
                 }])
                 ->orderByDesc('pacientes_count')
-                ->get();
+                ->paginate(10);
 
-            // Al transformar la colección, aseguramos que la data del UPS esté disponible
-            // y que los índices sean numéricos mediante values()
-            return $this->success($list->values());
+            return $this->success($list);
 
         } catch (\Exception $e) {
             return $this->error(
@@ -63,7 +61,7 @@ class ReporteController extends Controller
             })
             ->orderBy('pacientes.apellido')
             ->orderBy('pacientes.nombre')
-            ->paginate(15);
+            ->paginate(10);
 
             // Retornamos la data del personal y la lista paginada de sus pacientes
             return $this->success([

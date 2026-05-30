@@ -11,7 +11,10 @@ class Paciente extends Model
     protected $fillable = [
         'nombre',
         'apellido',
+        'tipo_documento',
         'gestante',
+        'etapa_vida',
+        'detalle_gestante',
         'dni',
         'HistoriaClinica',
         'telefono',

@@ -6,11 +6,14 @@ trait ApiResponse
 {
     protected function success($data, string $message = 'Éxito', int $code = 200)
     {
-        if ($data instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-            return response()->json(array_merge(
-                $data->toArray(),
-                ['message' => $message]
-            ), $code);
+        if ($data instanceof \Illuminate\Contracts\Pagination\Paginator || 
+            $data instanceof \Illuminate\Pagination\LengthAwarePaginator ||
+            $data instanceof \Illuminate\Pagination\AbstractPaginator) {
+            return response()->json($data, $code);
+        }
+
+        if (is_array($data) && isset($data['current_page']) && isset($data['data'])) {
+            return response()->json($data, $code);
         }
 
         return response()->json(['data' => $data, 'message' => $message], $code);

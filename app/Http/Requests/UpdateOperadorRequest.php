@@ -6,22 +6,38 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateOperadorRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
-        return $this->user() != null;
+        return true;
     }
 
-    public function rules()
+    public function rules(): array
     {
-        $id = $this->route('id') ?? $this->route('operador');
+        // El parámetro de ruta según artisan route:list es 'operadore'
+        $operadorId = $this->route('operadore');
+        
+        $operador = \App\Models\Operador::find($operadorId);
+        $userId = $operador ? $operador->user_id : null;
+
         return [
-            'nombre' => 'sometimes|string|max:255',
-            'apellido' => 'sometimes|string|max:255',
-            'email' => "nullable|email|max:255|unique:operadores,email,$id",
-            'usuario' => "sometimes|string|max:255|unique:operadores,usuario,$id",
-            'contraseña' => 'sometimes|string|min:6',
-            'DNI' => "sometimes|string|max:20|unique:operadores,DNI,$id",
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'DNI' => 'required|string|min:8|unique:operadores,DNI,' . ($operadorId ?: 'NULL'),
+            'email' => 'required|email|unique:users,email,' . ($userId ?: 'NULL'),
+            'usuario' => 'required|string|unique:operadores,usuario,' . ($operadorId ?: 'NULL'),
+            'password' => 'nullable|string|min:4',
             'horario_semanal' => 'nullable|array',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'DNI.min' => 'El DNI debe tener por lo menos 8 digitos.',
+            'DNI.unique' => 'Este DNI ya esta registrado en otro operador.',
+            'email.unique' => 'Este correo ya esta en uso.',
+            'usuario.unique' => 'Este nombre de usuario ya esta en uso.',
+            'password.min' => 'La contrasena debe tener al menos 4 caracteres.',
         ];
     }
 }

@@ -15,10 +15,10 @@ class UsersController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = (int) $request->input('per_page', 25);
+        $perPage = (int) $request->input('per_page', 10);
         $users = User::with('roles')
             ->select('id','name','email','created_at')
-            ->orderBy('name')
+            ->orderBy('id', 'asc')
             ->paginate($perPage);
 
         return $this->success($users);

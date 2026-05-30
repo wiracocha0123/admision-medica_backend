@@ -16,9 +16,22 @@ class PacientesController extends Controller
      */
     public function index()
     {
-        $pacientes = Paciente::select('id','nombre','apellido','dni', 'HistoriaClinica','telefono','email', 'direccion','gestante')
+        $pacientes = Paciente::select(
+            'id',
+            'nombre',
+            'apellido',
+            'dni',
+            'tipo_documento',
+            'etapa_vida',
+            'detalle_gestante',
+            'HistoriaClinica',
+            'telefono',
+            'email',
+            'direccion',
+            'gestante'
+        )
             ->orderBy('apellido')
-            ->paginate(25);
+            ->paginate(10);
 
         return $this->success($pacientes);
     }

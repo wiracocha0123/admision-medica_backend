@@ -17,7 +17,7 @@ class CitasController extends Controller
         $query = Cita::with(['paciente', 'personalSalud', 'operador', 'especialidad']);
         if ($request->filled('personal_salud_id')) $query->where('personal_salud_id', $request->personal_salud_id);
         if ($request->filled('fecha')) $query->whereDate('fecha', $request->fecha);
-        return $this->success($query->orderBy('fecha', 'desc')->orderBy('hora', 'asc')->paginate(25));
+        return $this->success($query->orderBy('fecha', 'desc')->orderBy('hora', 'asc')->paginate(10));
     }
 
     public function getNextTicket(Request $request)

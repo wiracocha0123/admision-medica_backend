@@ -1,92 +1,117 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Operador;
 use App\Models\User;
-
-use Illuminate\Http\Request;
 use App\Http\Controllers\Traits\ApiResponse;
 use App\Http\Requests\StoreOperadorRequest;
 use App\Http\Requests\UpdateOperadorRequest;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class OperadoresController extends Controller
 {
     use ApiResponse;
-    
+
     public function index()
     {
-        $operadores = Operador::orderBy('apellido')->paginate(25);
-        return $this->success($operadores);
+        return $this->success(Operador::with('user')->orderBy('id', 'asc')->paginate(10));
     }
 
     public function store(StoreOperadorRequest $request)
     {
+        Log::info('Datos recibidos en store:', $request->all());
         try {
-            $validated = $request->validated();
-            $operador = Operador::create($validated);
+            $data = $request->validated();
+            $operador = DB::transaction(function () use ($data) {
+                $user = User::create([
+                    'name' => $data['nombre'] . ' ' . $data['apellido'],
+                    'email' => $data['email'],
+                    'password' => Hash::make($data['password']),
+                ]);
 
-            if (!empty($operador->email)) {
-                $existing = User::where('email', $operador->email)->first();
-                if (!$existing) {
-                    $password = $validated['contraseña'] ?? ($validated['password'] ?? 'changeme123');
-                    $user = User::create([
-                        'name' => trim(($operador->nombre ?? '') . ' ' . ($operador->apellido ?? '')),
-                        'email' => $operador->email,
-                        'password' => bcrypt($password),
-                    ]);
-                } else {
-                    $user = $existing;
-                }
+                $horario = $data['horario_semanal'] ?? null;
+                
+                return Operador::create([
+                    'user_id' => $user->id,
+                    'nombre' => $data['nombre'],
+                    'apellido' => $data['apellido'],
+                    'DNI' => $data['DNI'],
+                    'email' => $data['email'],
+                    'usuario' => $data['usuario'],
+                    'contraseña' => $data['password'],
+                    'horario_semanal' => $horario // Eloquent manejará el cast a JSON sin escapar caracteres
+                ]);
+            });
 
-                $operador->user_id = $user->id;
-                $operador->save();
-            }
-
-            return $this->success($operador, 'Creado', 201);
+            return $this->success($operador->load('user'), 'Operador creado correctamente', 201);
         } catch (\Exception $e) {
-            return $this->error($e->getMessage(), 'Error interno', 500);
+            Log::error('Error en store Operador: ' . $e->getMessage());
+            return $this->error($e->getMessage(), 500);
         }
     }
 
-    public function show(string $id)
+    public function update(UpdateOperadorRequest $request, $id)
     {
-        $operador = Operador::find($id);
-        if (!$operador) return $this->error('No encontrado', 404);
-        return $this->success($operador);
-    }
+        Log::info('Datos recibidos en update:', $request->all());
+        try {
+            $data = $request->validated(); 
+            $operador = Operador::findOrFail($id);
 
-    public function update(UpdateOperadorRequest $request, string $id)
-    {
-        $operador = Operador::find($id);
-        if (!$operador) return $this->error('No encontrado', 404);
-        
-        $data = $request->validated();
-        $operador->update($data);
-
-        // Sincronizar con el usuario si existe
-        if ($operador->user_id) {
-            $user = User::find($operador->user_id);
-            if ($user) {
-                $userData = [
-                    'name' => trim($operador->nombre . ' ' . $operador->apellido),
-                    'email' => $operador->email
+            DB::transaction(function () use ($data, $operador) {
+                $updateData = [
+                    'nombre' => $data['nombre'],
+                    'apellido' => $data['apellido'],
+                    'DNI' => $data['DNI'],
+                    'email' => $data['email'],
+                    'usuario' => $data['usuario'],
                 ];
-                if (!empty($data['contraseña']) || !empty($data['password'])) {
-                    $userData['password'] = bcrypt($data['contraseña'] ?? $data['password']);
-                }
-                $user->update($userData);
-            }
-        }
 
-        return $this->success($operador, 'Actualizado');
+                if (array_key_exists('horario_semanal', $data)) {
+                    $updateData['horario_semanal'] = $data['horario_semanal'];
+                }
+
+                if (!empty($data['password'])) {
+                    $updateData['contraseña'] = $data['password'];
+                }
+
+                $operador->update($updateData);
+
+                if ($operador->user) {
+                    $userData = [
+                        'name' => $data['nombre'] . ' ' . $data['apellido'],
+                        'email' => $data['email'],
+                    ];
+                    if (!empty($data['password'])) {
+                        $userData['password'] = Hash::make($data['password']);
+                    }
+                    $operador->user->update($userData);
+                }
+            });
+
+            return $this->success($operador->fresh()->load('user'), 'Operador actualizado correctamente');
+        } catch (\Exception $e) {
+            Log::error('Error en update Operador: ' . $e->getMessage());
+            return $this->error($e->getMessage(), 500);
+        }
     }
 
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        $operador = Operador::find($id);
-        if (!$operador) return $this->error('No encontrado', 404);
-        $operador->delete();
-        return $this->success(['id' => $id], 'Eliminado');
+        try {
+            $operador = Operador::findOrFail($id);
+            DB::transaction(function () use ($operador) {
+                $user = $operador->user;
+                $operador->delete();
+                if ($user) {
+                    $user->delete();
+                }
+            });
+            return $this->success(null, 'Operador eliminado correctamente');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 500);
+        }
     }
 }
-

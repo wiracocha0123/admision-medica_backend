@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Traits\ApiResponse;
 use App\Http\Requests\StoreEspecialidadRequest;
 use App\Http\Requests\UpdateEspecialidadRequest;
-use Symfony\Component\HttpKernel\HttpCache\Esi;
 
 class EspecialidadesController extends Controller
 {
@@ -16,20 +15,27 @@ class EspecialidadesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        Cache::forget('especialidades:list'); // Forzamos limpieza para corregir serialización corrupta
-        $Especialidades = Cache::remember('especialidades:list', 3600, function () {
+        $page = $request->get('page', 1);
+        $search = $request->get('search');
+        
+        // Versión para invalidación masiva controlada
+        $version = Cache::get('especialidades_version', 1);
+        $cacheKey = "especialidades_v{$version}_page_{$page}_search_{$search}";
+
+        $especialidades = Cache::remember($cacheKey, 3600, function () use ($search) {
             return Especialidad::select('id', 'UPS', 'especialidad')
-                ->orderBy('especialidad')
-                ->get()
-                ->values(); // Asegura llaves numéricas limpias
+                ->when($search, function ($query, $search) {
+                    return $query->where('especialidad', 'LIKE', "%{$search}%")
+                                 ->orWhere('UPS', 'LIKE', "%{$search}%");
+                })
+                ->orderBy('id', 'asc')
+                ->paginate(10)
+                ->toArray(); // Almacenamos array para evitar __PHP_Incomplete_Class_Name
         });
 
-        return response()->json([
-            'data' => $Especialidades,
-            'message' => 'Éxito'
-        ]);
+        return response()->json($especialidades);
     }
 
     /**
@@ -38,7 +44,7 @@ class EspecialidadesController extends Controller
     public function store(StoreEspecialidadRequest $request)
     {
         $especialidad = Especialidad::create($request->validated());
-        Cache::forget('especialidades:list');
+        Cache::increment('especialidades_version');
         return $this->success($especialidad, 'Creado', 201);
     }
 
@@ -58,7 +64,7 @@ class EspecialidadesController extends Controller
     {
         $especialidad = Especialidad::find($id);
         $especialidad->update($request->validated());
-        Cache::forget('especialidades:list');
+        Cache::increment('especialidades_version');
         return $this->success($especialidad, 'Actualizado');
     }
 
@@ -69,7 +75,7 @@ class EspecialidadesController extends Controller
     {
         $especialidad = Especialidad::find($id);
         $especialidad->delete();
-        Cache::forget('especialidades:list');
+        Cache::increment('especialidades_version');
         return response()->json(null, 204);
     }
 }
