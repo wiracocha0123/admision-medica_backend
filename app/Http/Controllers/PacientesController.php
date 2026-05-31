@@ -30,7 +30,7 @@ class PacientesController extends Controller
             'direccion',
             'gestante'
         )
-            ->orderBy('apellido')
+            ->orderBy('id', 'desc')
             ->paginate(10);
 
         return $this->success($pacientes);

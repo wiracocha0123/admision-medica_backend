@@ -40,6 +40,7 @@ Route::middleware('auth:api')->group(function(){
 });
 
 Route::group(['middleware' => ['role:operador|supervisor']], function () {
+    Route::get('dashboard/stats', [App\Http\Controllers\DashboardController::class, 'stats']);
     Route::apiResource('operadores', App\Http\Controllers\OperadoresController::class);
     Route::get('reportes/personal', [App\Http\Controllers\ReporteController::class, 'index']);
     Route::get('reportes/personal/{id}/pacientes', [App\Http\Controllers\ReporteController::class, 'showPacientes']);

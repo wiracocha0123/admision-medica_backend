@@ -17,7 +17,7 @@ class OperadoresController extends Controller
 
     public function index()
     {
-        return $this->success(Operador::with('user')->orderBy('id', 'asc')->paginate(10));
+        return $this->success(Operador::with('user')->orderBy('id', 'desc')->paginate(10));
     }
 
     public function store(StoreOperadorRequest $request)
