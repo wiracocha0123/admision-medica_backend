@@ -17,7 +17,7 @@ class StorePacienteRequest extends FormRequest
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
             'tipo_documento' => 'nullable|string|max:50',
-            'dni' => 'required|string|max:20|unique:pacientes',
+            'dni' => 'nullable|string|max:20|unique:pacientes',
             'HistoriaClinica' => 'nullable|string|unique:pacientes,HistoriaClinica',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255|unique:pacientes',
