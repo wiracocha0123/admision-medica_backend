@@ -15,11 +15,11 @@ class PersonalSalud extends Model
         'telefono',
         'email',
         'especialidad_id',
-        'horario_semanal',
+        'horario_mensual',
     ];
 
     protected $casts = [
-        'horario_semanal' => 'array',
+        'horario_mensual' => 'array',
     ];
 
     public function citas()
@@ -37,9 +37,8 @@ class PersonalSalud extends Model
         return $this->hasMany(Paciente::class, 'personal_salud_id');
     }
 
-    public function horarioSemanal()
+    public function horarioMensual()
     {
-        return json_decode($this->horario_semanal, true);
-       
+        return $this->horario_mensual;
     }
 }      
