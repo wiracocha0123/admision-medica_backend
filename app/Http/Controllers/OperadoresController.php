@@ -8,7 +8,6 @@ use App\Http\Controllers\Traits\ApiResponse;
 use App\Http\Requests\StoreOperadorRequest;
 use App\Http\Requests\UpdateOperadorRequest;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class OperadoresController extends Controller
@@ -29,8 +28,9 @@ class OperadoresController extends Controller
                 $user = User::create([
                     'name' => $data['nombre'] . ' ' . $data['apellido'],
                     'email' => $data['email'],
-                    'password' => Hash::make($data['password']),
+                    'password' => $data['password'],
                 ]);
+                $user->assignRole('operador');
 
                 $horario = $data['horario_semanal'] ?? null;
                 
@@ -85,9 +85,13 @@ class OperadoresController extends Controller
                         'email' => $data['email'],
                     ];
                     if (!empty($data['password'])) {
-                        $userData['password'] = Hash::make($data['password']);
+                        $userData['password'] = $data['password'];
                     }
                     $operador->user->update($userData);
+
+                    if (! $operador->user->hasRole('operador')) {
+                        $operador->user->assignRole('operador');
+                    }
                 }
             });
 
