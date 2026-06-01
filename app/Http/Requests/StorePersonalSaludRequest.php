@@ -33,6 +33,7 @@ class StorePersonalSaludRequest extends FormRequest
             'horario_mensual.*.dia_numero' => 'required|integer',
             'horario_mensual.*.turno_m' => 'nullable|string',
             'horario_mensual.*.turno_t' => 'nullable|string',
+            'horario_mensual.*.turno_n' => 'nullable|string',
         ];
     }
 }
