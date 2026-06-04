@@ -29,6 +29,7 @@ class StorePersonalSaludRequest extends FormRequest
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255|unique:personal_salud',
             'especialidad_id' => 'nullable|exists:especialidades,id',
+            'cargo' => 'nullable|string|max:255',
             'horario_mensual' => 'nullable|array|min:30|max:31',
             'horario_mensual.*.dia_numero' => 'required|integer',
             'horario_mensual.*.turno_m' => 'nullable|string',

@@ -15,6 +15,7 @@ class PersonalSalud extends Model
         'telefono',
         'email',
         'especialidad_id',
+        'cargo',
         'horario_mensual',
     ];
 

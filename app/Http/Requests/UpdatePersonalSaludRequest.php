@@ -26,10 +26,11 @@ class UpdatePersonalSaludRequest extends FormRequest
         return [
             'nombres' => 'sometimes|required|string|max:255',
             'apellidos' => 'sometimes|required|string|max:255',
-            'dni' => 'sometimes|required|string|max:20|unique:personal_salud,dni,' . $id,
+            'dni' => 'sometimes|nullable|string|max:20|unique:personal_salud,dni,' . $id,
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255|unique:personal_salud,email,' . $id,
             'especialidad_id' => 'nullable|exists:especialidades,id',
+            'cargo' => 'nullable|string|max:255',
             'horario_mensual' => 'nullable|array|min:30|max:31',
             'horario_mensual.*.dia_numero' => 'required|integer',
             'horario_mensual.*.turno_m' => 'nullable|string',
