@@ -17,6 +17,9 @@ class PacientesController extends Controller
      */
     public function index(Request $request)
     {
+        $page = $request->get('page');
+        $perPage = max(1, (int) $request->input('per_page', 15));
+
         $query = Paciente::select(
             'id',
             'nombre',
@@ -40,7 +43,14 @@ class PacientesController extends Controller
             $query->where('estado', 'Activo');
         }
 
-        $pacientes = $query->orderBy('id', 'desc')->paginate(10);
+        $query = $query->orderBy('id', 'desc');
+
+        if ($page === 'all' || $page === '-1') {
+            $pacientes = $query->get();
+            return response()->json($pacientes);
+        }
+
+        $pacientes = $query->paginate($perPage);
 
         return $this->success($pacientes);
     }

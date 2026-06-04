@@ -20,7 +20,7 @@ class PersonaSaludController extends Controller
         $page = $request->get('page');
         $perPage = max(1, (int) $request->input('per_page', 15));
 
-        $query = PersonalSalud::with('especialidad');
+        $query = PersonalSalud::with('especialidad')->orderBy('id', 'desc');
 
         if ($page === 'all') {
             $personalsalud = $query->get();

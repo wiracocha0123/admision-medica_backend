@@ -32,7 +32,7 @@ class UpdateCitaRequest extends FormRequest
             'nro_ticket' => 'sometimes|required|integer',
             'total_tickets_dia' => 'nullable|integer',
             'observaciones' => 'nullable|string',
-            'operador_id' => 'nullable|exists:users,id'
+            'operador_id' => 'nullable|exists:operadores,id'
         ];
     }
 }
