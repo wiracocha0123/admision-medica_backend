@@ -14,11 +14,11 @@ class StorePacienteRequest extends FormRequest
     public function rules()
     {
         return [
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
+            'nombre' => 'nullable|string|max:255',
+            'apellido' => 'nullable|string|max:255',
             'tipo_documento' => 'nullable|string|max:50',
-            'dni' => 'nullable|string|max:20|unique:pacientes',
-            'HistoriaClinica' => 'nullable|string|unique:pacientes,HistoriaClinica',
+            'dni' => 'nullable|string|max:15|unique:pacientes',
+            'HistoriaClinica' => 'required|string|unique:pacientes,HistoriaClinica',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255|unique:pacientes',
             'direccion' => 'nullable|string|max:100', // Ampliamos un poco por si acaso

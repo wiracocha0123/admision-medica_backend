@@ -25,7 +25,7 @@ class StorePersonalSaludRequest extends FormRequest
         return [
             'nombres' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
-            'dni' => 'required|string|max:20|unique:personal_salud',
+            'dni' => 'nullable|string|max:20|unique:personal_salud',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255|unique:personal_salud',
             'especialidad_id' => 'nullable|exists:especialidades,id',

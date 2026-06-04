@@ -18,14 +18,21 @@ class EspecialidadesController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
+        $page = $request->get('page');
+        $perPage = max(1, (int) $request->input('per_page', 10));
 
-        $especialidades = Especialidad::select('id', 'UPS', 'especialidad')
+        $query = Especialidad::select('id', 'UPS', 'especialidad')
             ->when($search, function ($query, $search) {
                 return $query->where('especialidad', 'LIKE', "%{$search}%")
                              ->orWhere('UPS', 'LIKE', "%{$search}%");
             })
-            ->orderBy('id', 'asc')
-            ->paginate(10);
+            ->orderBy('id', 'asc');
+
+        if ($page === 'all') {
+            $especialidades = $query->get();
+        } else {
+            $especialidades = $query->paginate($perPage);
+        }
 
         return response()->json($especialidades);
     }

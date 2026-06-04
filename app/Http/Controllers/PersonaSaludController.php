@@ -15,9 +15,19 @@ class PersonaSaludController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $personalsalud = PersonalSalud::with('especialidad')->paginate(15);
+        $page = $request->get('page');
+        $perPage = max(1, (int) $request->input('per_page', 15));
+
+        $query = PersonalSalud::with('especialidad');
+
+        if ($page === 'all') {
+            $personalsalud = $query->get();
+            return response()->json($personalsalud);
+        }
+
+        $personalsalud = $query->paginate($perPage);
         return $this->success($personalsalud);
     }
 

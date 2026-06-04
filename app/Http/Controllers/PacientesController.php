@@ -8,15 +8,16 @@ use App\Http\Controllers\Traits\ApiResponse;
 use App\Http\Requests\StorePacienteRequest;
 use App\Http\Requests\UpdatePacienteRequest;
 
+
 class PacientesController extends Controller
 {
     use ApiResponse;
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pacientes = Paciente::select(
+        $query = Paciente::select(
             'id',
             'nombre',
             'apellido',
@@ -28,10 +29,18 @@ class PacientesController extends Controller
             'telefono',
             'email',
             'direccion',
-            'gestante'
-        )
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+            'gestante',
+            'estado'
+        );
+        // --- EL FILTRO QUE SOLICITASTE ---
+        if ($request->has('estado')) {
+            $query->where('estado', $request->estado);
+        } else {
+            // Por defecto, si no se pide nada, mostrar solo Activos
+            $query->where('estado', 'Activo');
+        }
+
+        $pacientes = $query->orderBy('id', 'desc')->paginate(10);
 
         return $this->success($pacientes);
     }
