@@ -14,10 +14,35 @@ class CitasController extends Controller
 
     public function index(Request $request)
     {
-        $query = Cita::with(['paciente', 'personalSalud', 'operador', 'especialidad']);
-        if ($request->filled('personal_salud_id')) $query->where('personal_salud_id', $request->personal_salud_id);
-        if ($request->filled('fecha')) $query->whereDate('fecha', $request->fecha);
-        return $this->success($query->orderBy('fecha', 'asc')->orderBy('nro_ticket', 'desc')->paginate(20));
+        $query = Cita::with(['paciente', 'personalSalud', 'operador', 'especialidad'])
+            ->leftJoin('pacientes', 'citas.paciente_id', '=', 'pacientes.id')
+            ->select('citas.*');
+
+        // Filtro por búsqueda (nombre, apellido, DNI del paciente)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('pacientes.nombre', 'like', "%{$search}%")
+                  ->orWhere('pacientes.apellido', 'like', "%{$search}%")
+                  ->orWhere('pacientes.dni', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtro por estado (si no es 'todos')
+        if ($request->filled('estado') && $request->estado !== 'todos') {
+            $query->where('citas.estado', $request->estado);
+        }
+
+        // Filtro por especialidad (si no es 'todas')
+        if ($request->filled('especialidad_id') && $request->especialidad_id !== 'todas') {
+            $query->where('citas.especialidad_id', $request->especialidad_id);
+        }
+
+        // Filtros existentes
+        if ($request->filled('personal_salud_id')) $query->where('citas.personal_salud_id', $request->personal_salud_id);
+        if ($request->filled('fecha')) $query->whereDate('citas.fecha', $request->fecha);
+
+        return $this->success($query->orderBy('citas.fecha', 'asc')->orderBy('citas.nro_ticket', 'desc')->paginate(20));
     }
 
     public function getNextTicket(Request $request)

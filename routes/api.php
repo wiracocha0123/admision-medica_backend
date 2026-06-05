@@ -39,6 +39,12 @@ Route::middleware('auth:api')->group(function(){
     return response()->json($user);
 });
 
+    // Endpoints de Perfil de Usuario
+    Route::get('user/profile', [App\Http\Controllers\UserProfileController::class, 'show']);
+    Route::put('user/profile', [App\Http\Controllers\UserProfileController::class, 'update']);
+    Route::post('user/change-password', [App\Http\Controllers\UserProfileController::class, 'changePassword']);
+});
+
 Route::group(['middleware' => ['role:operador|supervisor']], function () {
     Route::get('dashboard/stats', [App\Http\Controllers\DashboardController::class, 'stats']);
     Route::apiResource('operadores', App\Http\Controllers\OperadoresController::class);
@@ -52,8 +58,7 @@ Route::group(['middleware' => ['role:operador|supervisor']], function () {
     
     Route::apiResource('personal_salud', App\Http\Controllers\PersonaSaludController::class);
     Route::get('citas/next-ticket', [App\Http\Controllers\CitasController::class, 'getNextTicket']); Route::apiResource('citas', App\Http\Controllers\CitasController::class);
-});
-
+    
     Route::get('operadores/me', function(){ return response()->json(auth('api')->user()->operador ?? null); });
     Route::get('admin/dashboard', function(){ return ['ok' => 'admin']; })->middleware('role:supervisor');
     Route::get('users', [App\Http\Controllers\UsersController::class, 'index'])->middleware('role:supervisor');
