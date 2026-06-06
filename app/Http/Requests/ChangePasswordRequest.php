@@ -22,7 +22,7 @@ class ChangePasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'current_password' => 'required|string',
+            
             'new_password' => 'required|string|min:8|different:current_password',
         ];
     }
@@ -30,7 +30,7 @@ class ChangePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'current_password.required' => 'La contraseña actual es obligatoria',
+            
             'new_password.required' => 'La nueva contraseña es obligatoria',
             'new_password.min' => 'La nueva contraseña debe tener al menos 8 caracteres',
             'new_password.different' => 'La nueva contraseña debe ser diferente a la actual',

@@ -22,7 +22,7 @@ class ReporteController extends Controller
             // 2. Cargamos la relación 'especialidad' incluyendo el campo UPS de su tabla
             // 3. Calculamos pacientes únicos mediante una subconsulta de citas
             $list = PersonalSalud::with('especialidad:id,especialidad,UPS')
-                ->select('id', 'nombres', 'apellidos', 'especialidad_id')
+                ->select('id', 'nombres', 'apellidos', 'especialidad_id', 'cargo')
                 ->addSelect(['pacientes_count' => function ($query) {
                     $query->selectRaw('count(distinct paciente_id)')
                         ->from('citas')
@@ -71,6 +71,7 @@ class ReporteController extends Controller
                     'apellidos' => $personal->apellidos,
                     'especialidad' => $personal->especialidad?->especialidad,
                     'UPS' => $personal->especialidad?->UPS,
+                    'cargo' => $personal->cargo,
                 ],
                 'pacientes' => $pacientes
             ]);

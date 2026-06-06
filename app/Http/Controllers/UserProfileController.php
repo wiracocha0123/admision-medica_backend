@@ -68,10 +68,7 @@ class UserProfileController extends Controller
             return $this->error('Usuario no autenticado', 401);
         }
 
-        // Validar que la contraseña actual sea correcta
-        if (!Hash::check($request->current_password, $user->password)) {
-            return $this->error('La contraseña actual es incorrecta', 400);
-        }
+        
 
         // Actualizar la contraseña
         $user->update([

@@ -55,7 +55,7 @@ class DashboardController extends Controller
 
             // 5. AGREGAR ESTO: Últimos Pacientes registrados
         $recent_patients = Paciente::latest()
-            ->take(7) // Traer los últimos 10
+            ->take(6) // Traer los últimos 6
             ->get(['id', 'nombre', 'apellido', 'dni', 'tipo_documento', 'telefono']);
 
         return response()->json([
