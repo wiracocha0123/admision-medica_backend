@@ -47,50 +47,102 @@ class CitasController extends Controller
 
     public function getNextTicket(Request $request)
     {
-        if (!$request->filled('fecha')) return $this->success(['next_ticket' => 1]);
-        
-        // REGLA: Ticket global por fecha (sin filtrar por médico)
-        $citas = Cita::whereDate('fecha', $request->fecha)->get();
-        $maxTicket = 0;
-        foreach ($citas as $c) {
-            $numero = (int) $c->nro_ticket;
-            if ($numero > $maxTicket) $maxTicket = $numero;
+        if (!$request->filled('fecha')) {
+            return $this->success(['next_ticket' => 1, 'total_tickets_dia' => 16]);
         }
-        return $this->success(['next_ticket' => $maxTicket + 1]);
+
+        if (!$request->filled('especialidad_id')) {
+            return $this->error('especialidad_id es requerido', 400);
+        }
+
+        // Tickets independientes por especialidad y fecha
+        $maxTicket = Cita::whereDate('fecha', $request->fecha)
+            ->where('especialidad_id', $request->especialidad_id)
+            ->max('nro_ticket');
+
+        $cupo = (int) $request->query('cupo', 16);
+
+        return $this->success([
+            'next_ticket' => ($maxTicket ?? 0) + 1,
+            'total_tickets_dia' => $cupo,
+            'especialidad_id' => $request->especialidad_id
+        ]);
     }
 
     public function store(StoreCitaRequest $request)
     {
         $data = $request->validated();
-        
-        // Calcular ticket global antes de insertar
-        $citas = Cita::whereDate('fecha', $data['fecha'])->get();
-        $maxTicket = 0;
-        foreach ($citas as $c) {
-            $numero = (int) $c->nro_ticket;
-            if ($numero > $maxTicket) $maxTicket = $numero;
+
+        // Tickets independientes por especialidad y fecha
+        $maxTicket = Cita::whereDate('fecha', $data['fecha'])
+            ->where('especialidad_id', $data['especialidad_id'])
+            ->max('nro_ticket');
+
+        $siguienteTicket = ($maxTicket ?? 0) + 1;
+
+        // Validar cupo máximo
+        $cupo = $data['total_tickets_dia'] ?? 16;
+        if ($siguienteTicket > $cupo) {
+            return $this->error(
+                "Se ha alcanzado el cupo máximo ({$cupo}) de tickets para esta especialidad en la fecha {$data['fecha']}.",
+                422
+            );
         }
-        
-        $nuevoTicket = $maxTicket + 1;
-        $data['nro_ticket'] = $nuevoTicket;
-        if (!isset($data['operador_id'])) $data['operador_id'] = auth()->id();
-        
+
+        $data['nro_ticket'] = $siguienteTicket;
+        if (!isset($data['operador_id'])) {
+            $data['operador_id'] = auth('api')->id();
+        }
+
         $cita = Cita::create($data);
-        return $this->success($cita, 'Ticket #' . $nuevoTicket . ' generado.', 201);
+        return $this->success($cita, 'Ticket #' . $siguienteTicket . ' generado.', 201);
     }
 
     public function update(UpdateCitaRequest $request, $id)
     {
         $cita = Cita::find($id);
-        if (!$cita) return $this->error('No encontrado', 404);
-        $cita->update($request->validated());
-        return $this->success($cita);
+        if (!$cita) {
+            return $this->error('No encontrado', 404);
+        }
+
+        $data = $request->validated();
+
+        // Si se actualiza especialidad o fecha, recalcular el ticket
+        if ($request->has('especialidad_id') || $request->has('fecha')) {
+            $fecha = $request->fecha ?? $cita->fecha;
+            $especialidad_id = $request->especialidad_id ?? $cita->especialidad_id;
+
+            // Excluir la cita actual para no contar el mismo ticket
+            $maxTicket = Cita::whereDate('fecha', $fecha)
+                ->where('especialidad_id', $especialidad_id)
+                ->where('id', '!=', $cita->id)
+                ->max('nro_ticket');
+
+            $siguienteTicket = ($maxTicket ?? 0) + 1;
+
+            // Validar cupo
+            $cupo = $request->total_tickets_dia ?? $cita->total_tickets_dia ?? 16;
+            if ($siguienteTicket > $cupo) {
+                return $this->error(
+                    "Se ha alcanzado el cupo máximo ({$cupo}) de tickets para esta especialidad.",
+                    422
+                );
+            }
+
+            $data['nro_ticket'] = $siguienteTicket;
+        }
+
+        $cita->update($data);
+        return $this->success($cita, 'Cita actualizada correctamente');
     }
 
     public function destroy($id)
     {
         $cita = Cita::find($id);
-        if (!$cita) return $this->error('No encontrado', 404);
+        if (!$cita) {
+            return $this->error('No encontrado', 404);
+        }
+
         $cita->delete();
         // Fix: Pasar array para evitar error en ApiResponse trait
         return $this->success(['id' => $id], 'Cita eliminada correctamente');
