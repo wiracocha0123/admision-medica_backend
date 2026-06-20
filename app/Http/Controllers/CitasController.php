@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Cita;
+use App\Models\CuposPorEspecialidad;
 use App\Http\Controllers\Traits\ApiResponse;
 use App\Http\Requests\StoreCitaRequest;
 use App\Http\Requests\UpdateCitaRequest;
+use App\Http\Requests\StoreCuposConfigRequest;
 
 class CitasController extends Controller
 {
@@ -73,6 +75,31 @@ class CitasController extends Controller
     {
         $data = $request->validated();
 
+        // Contar citas existentes para esa fecha y especialidad
+        $citasExistentes = Cita::whereDate('fecha', $data['fecha'])
+            ->where('especialidad_id', $data['especialidad_id'])
+            ->count();
+
+        // Obtener cupo configurado (default 16)
+        $cupoConfig = CuposPorEspecialidad::where('fecha', $data['fecha'])
+            ->where('especialidad_id', $data['especialidad_id'])
+            ->first();
+
+        $cupoMaximo = $cupoConfig?->cantidad_cupos ?? 16;
+
+        // Validar límite de cupos
+        if ($citasExistentes >= $cupoMaximo) {
+            return $this->error(
+                [
+                    'error_code' => 'cupos_llenos',
+                    'cupos_maximo' => $cupoMaximo,
+                    'citas_actuales' => $citasExistentes
+                ],
+                'Se ha alcanzado el límite de cupos para esta especialidad',
+                400
+            );
+        }
+
         // Tickets independientes por especialidad y fecha
         $maxTicket = Cita::whereDate('fecha', $data['fecha'])
             ->where('especialidad_id', $data['especialidad_id'])
@@ -80,11 +107,10 @@ class CitasController extends Controller
 
         $siguienteTicket = ($maxTicket ?? 0) + 1;
 
-        // Validar cupo máximo
-        $cupo = $data['total_tickets_dia'] ?? 16;
-        if ($siguienteTicket > $cupo) {
+        // Validar cupo máximo por ticket
+        if ($siguienteTicket > $cupoMaximo) {
             return $this->error(
-                "Se ha alcanzado el cupo máximo ({$cupo}) de tickets para esta especialidad en la fecha {$data['fecha']}.",
+                "Se ha alcanzado el cupo máximo ({$cupoMaximo}) de tickets para esta especialidad en la fecha {$data['fecha']}.",
                 422
             );
         }
@@ -146,5 +172,44 @@ class CitasController extends Controller
         $cita->delete();
         // Fix: Pasar array para evitar error en ApiResponse trait
         return $this->success(['id' => $id], 'Cita eliminada correctamente');
+    }
+
+    public function storeCuposConfig(StoreCuposConfigRequest $request)
+    {
+        $validated = $request->validated();
+        $fecha = $validated['fecha'];
+        $cupos = $validated['cupos'];
+
+        try {
+            $cuposGuardados = [];
+
+            // Iterar sobre cada especialidad y sus cupos
+            foreach ($cupos as $especialidad_id => $cantidad_cupos) {
+                $cuposGuardados[$especialidad_id] = CuposPorEspecialidad::updateOrCreate(
+                    [
+                        'fecha' => $fecha,
+                        'especialidad_id' => $especialidad_id,
+                    ],
+                    [
+                        'cantidad_cupos' => $cantidad_cupos,
+                    ]
+                )->cantidad_cupos;
+            }
+
+            return $this->success(
+                [
+                    'fecha' => $fecha,
+                    'cupos_guardados' => $cuposGuardados,
+                ],
+                'Configuración de cupos guardada correctamente',
+                200
+            );
+        } catch (\Exception $e) {
+            return $this->error(
+                'Error al guardar los cupos: ' . $e->getMessage(),
+                'Error en el servidor',
+                500
+            );
+        }
     }
 }
