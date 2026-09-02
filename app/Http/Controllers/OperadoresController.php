@@ -32,8 +32,8 @@ class OperadoresController extends Controller
                 ]);
                 $user->assignRole('operador');
 
-                $horario = $data['horario_semanal'] ?? null;
-                
+                $horarioMensual = $data['horario_mensual'] ?? ($data['horario_semanal'] ?? null);
+
                 return Operador::create([
                     'user_id' => $user->id,
                     'nombre' => $data['nombre'],
@@ -42,7 +42,7 @@ class OperadoresController extends Controller
                     'email' => $data['email'],
                     'usuario' => $data['usuario'],
                     'contraseña' => $data['password'],
-                    'horario_semanal' => $horario // Eloquent manejará el cast a JSON sin escapar caracteres
+                    'horario_mensual' => $horarioMensual,
                 ]);
             });
 
@@ -69,8 +69,12 @@ class OperadoresController extends Controller
                     'usuario' => $data['usuario'],
                 ];
 
-                if (array_key_exists('horario_semanal', $data)) {
-                    $updateData['horario_semanal'] = $data['horario_semanal'];
+                $horarioMensual = array_key_exists('horario_mensual', $data)
+                    ? $data['horario_mensual']
+                    : ($data['horario_semanal'] ?? null);
+
+                if (array_key_exists('horario_mensual', $data) || array_key_exists('horario_semanal', $data)) {
+                    $updateData['horario_mensual'] = $horarioMensual;
                 }
 
                 if (!empty($data['password'])) {

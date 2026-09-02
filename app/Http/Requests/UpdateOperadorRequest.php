@@ -26,6 +26,11 @@ class UpdateOperadorRequest extends FormRequest
             'email' => 'required|email|unique:users,email,' . ($userId ?: 'NULL'),
             'usuario' => 'required|string|unique:operadores,usuario,' . ($operadorId ?: 'NULL'),
             'password' => 'nullable|string|min:4',
+            'horario_mensual' => 'nullable|array',
+            'horario_mensual.*.dia_numero' => 'nullable|integer',
+            'horario_mensual.*.turno_m' => 'nullable|string',
+            'horario_mensual.*.turno_t' => 'nullable|string',
+            'horario_mensual.*.turno_n' => 'nullable|string',
             'horario_semanal' => 'nullable|array',
         ];
     }

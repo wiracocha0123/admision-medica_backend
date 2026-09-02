@@ -20,6 +20,11 @@ class StoreOperadorRequest extends FormRequest
             'email' => 'required|email|unique:users,email',
             'usuario' => 'required|string|unique:operadores,usuario',
             'password' => 'required|string|min:4',
+            'horario_mensual' => 'nullable|array',
+            'horario_mensual.*.dia_numero' => 'nullable|integer',
+            'horario_mensual.*.turno_m' => 'nullable|string',
+            'horario_mensual.*.turno_t' => 'nullable|string',
+            'horario_mensual.*.turno_n' => 'nullable|string',
             'horario_semanal' => 'nullable|array',
         ];
     }
