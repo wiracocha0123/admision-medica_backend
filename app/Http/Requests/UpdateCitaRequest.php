@@ -27,6 +27,7 @@ class UpdateCitaRequest extends FormRequest
             'personal_salud_id' => 'nullable|exists:personal_salud,id',
             'especialidad_id' => 'nullable|exists:especialidades,id',
             'fecha' => 'sometimes|required|date',
+            'turno' => 'nullable|string',
             'hora' => 'nullable',
             'estado' => 'nullable|string',
             'nro_ticket' => 'sometimes|required|integer',

@@ -24,6 +24,8 @@ class PacientesController extends Controller
             'id',
             'nombre',
             'apellido',
+            'genero',
+            'fecha_nacimiento',
             'dni',
             'tipo_documento',
             'etapa_vida',
@@ -90,7 +92,7 @@ class PacientesController extends Controller
     public function show(string $id)
     {
         $paciente = Paciente::with(['citas' => function($q){ $q->select('id','paciente_id','fecha','hora','estado'); }])
-            ->select('id','nombre','apellido','dni','telefono','email','gestante','direccion')
+            ->select('id','nombre','apellido','dni','telefono','email','gestante','direccion','genero','fecha_nacimiento')
             ->find($id);
 
         return $this->success($paciente);

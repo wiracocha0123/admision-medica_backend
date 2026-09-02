@@ -17,6 +17,8 @@ class UpdatePacienteRequest extends FormRequest
         return [
             'nombre' => 'sometimes|string|max:255',
             'apellido' => 'sometimes|string|max:255',
+            'genero' => 'nullable|string|max:50',
+            'fecha_nacimiento' => 'nullable|date',
             'tipo_documento' => 'nullable|string|max:50',
             'dni' => "sometimes|string|max:15|unique:pacientes,dni,$id",
             'HistoriaClinica' => "required|string|unique:pacientes,HistoriaClinica,$id",

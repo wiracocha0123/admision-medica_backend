@@ -13,6 +13,7 @@ class Cita extends Model
         'personal_salud_id',
         'especialidad_id',
         'fecha',
+        'turno',
         'hora',
         'operador_id',
         'observaciones',

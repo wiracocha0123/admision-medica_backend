@@ -16,6 +16,8 @@ class StorePacienteRequest extends FormRequest
         return [
             'nombre' => 'nullable|string|max:255',
             'apellido' => 'nullable|string|max:255',
+            'genero' => 'nullable|string|max:50',
+            'fecha_nacimiento' => 'nullable|date',
             'tipo_documento' => 'nullable|string|max:50',
             'dni' => 'nullable|string|max:15|unique:pacientes',
             'HistoriaClinica' => 'required|string|unique:pacientes,HistoriaClinica',
